@@ -1,0 +1,231 @@
+﻿@using System.Text.Json
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    var assessmentJson = JsonSerializer.Serialize(Model.Assessments.Select(item => new {
+        id = item.Id, title = item.Title, module = item.ModuleName,
+        deadline = item.Deadline.ToString("yyyy-MM-dd"), targetWords = item.TargetWordCount,
+        currentWords = item.CurrentWordCount, priority = item.Priority, status = item.Status
+    }));
+}
+
+<div class="app-shell" id="appShell">
+    <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+        <a class="brand" asp-controller="Home" asp-action="Index" aria-label="Antler dashboard">
+            <span class="brand-mark"><i class="bi bi-journal-bookmark-fill" aria-hidden="true"></i></span>
+            <span class="brand-copy"><strong data-brand-name>Antler</strong><small>Your academic copilot</small></span>
+        </a>
+
+        <div class="sidebar-scroll">
+            <p class="nav-heading">Workspace</p>
+            <nav class="side-nav" aria-label="Workspace">
+                <a class="nav-item is-active" asp-controller="Home" asp-action="Index" aria-current="page"><i class="bi bi-grid-1x2-fill" aria-hidden="true"></i><span>Dashboard</span></a>
+                <button class="nav-item" type="button" disabled title="Available in a future stage"><i class="bi bi-collection" aria-hidden="true"></i><span>My Modules</span></button>
+                <a class="nav-item" href="#assessments"><i class="bi bi-journal-check" aria-hidden="true"></i><span>Assessments</span></a>
+                <button class="nav-item" type="button" disabled title="Available in a future stage"><i class="bi bi-calendar2-week" aria-hidden="true"></i><span>Study Planner</span></button>
+                <button class="nav-item" type="button" disabled title="Available in a future stage"><i class="bi bi-calendar3" aria-hidden="true"></i><span>Calendar</span></button>
+            </nav>
+
+            <p class="nav-heading nav-heading-tools">Tools</p>
+            <nav class="side-nav" aria-label="Study tools">
+                <button class="nav-item" type="button" disabled title="Available in a future stage"><i class="bi bi-file-earmark-richtext" aria-hidden="true"></i><span>Document Workspace</span><span class="nav-badge">New</span></button>
+                <button class="nav-item" type="button" disabled title="Available in a future stage"><i class="bi bi-stars" aria-hidden="true"></i><span>AI Study Assistant</span></button>
+                <button class="nav-item" type="button" disabled title="Available in a future stage"><i class="bi bi-graph-up-arrow" aria-hidden="true"></i><span>Progress &amp; Analytics</span></button>
+            </nav>
+        </div>
+
+        <div class="sidebar-bottom">
+            <button class="utility-link" id="settingsButton" type="button"><i class="bi bi-gear" aria-hidden="true"></i><span>Settings</span></button>
+            <button class="utility-link" id="helpButton" type="button"><i class="bi bi-question-circle" aria-hidden="true"></i><span>Help &amp; support</span></button>
+            <div class="profile-card">
+                <span class="avatar avatar-sidebar" aria-hidden="true">AM</span>
+                <span class="profile-copy"><strong>Alex Morgan</strong><small>Demo profile</small></span>
+                <button class="icon-button profile-more" id="profileButton" type="button" aria-label="Profile options" title="Profile options"><i class="bi bi-three-dots" aria-hidden="true"></i></button>
+            </div>
+        </div>
+    </aside>
+
+    <button class="sidebar-backdrop" id="sidebarBackdrop" type="button" aria-label="Close navigation"></button>
+
+    <div class="app-main">
+        <header class="topbar">
+            <div class="topbar-leading">
+                <button class="icon-button mobile-menu-button" id="menuButton" type="button" aria-label="Open navigation" aria-controls="sidebar" aria-expanded="false"><i class="bi bi-list" aria-hidden="true"></i></button>
+                <div class="breadcrumb"><span>Workspace</span><i class="bi bi-chevron-right" aria-hidden="true"></i><strong>Dashboard</strong></div>
+            </div>
+            <div class="topbar-actions">
+                <form class="search-box" id="searchForm" role="search">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                    <button class="mobile-search-toggle" id="mobileSearchButton" type="button" aria-label="Open search" aria-expanded="false"><i class="bi bi-search" aria-hidden="true"></i></button>
+                    <label class="visually-hidden" for="globalSearch">Search your study plan</label>
+                    <input id="globalSearch" type="search" placeholder="Search your workspace" autocomplete="off" />
+                    <kbd>⌘ K</kbd>
+                    <div class="search-results" id="searchResults" role="listbox" aria-label="Search results" hidden></div>
+                </form>
+                <label class="visually-hidden" for="semesterSelect">Semester</label>
+                <select class="semester-select" id="semesterSelect" aria-label="Select semester">
+                    <option>Autumn 2026</option>
+                    <option>Spring 2027</option>
+                    <option>Summer 2027</option>
+                </select>
+                <button class="icon-button notification-button" id="notificationButton" type="button" aria-label="Notifications"><i class="bi bi-bell" aria-hidden="true"></i><span class="notification-dot" aria-hidden="true"></span></button>
+                <button class="topbar-avatar" id="topProfileButton" type="button" aria-label="Open Alex Morgan's demo profile"><span class="avatar">AM</span><i class="bi bi-chevron-down" aria-hidden="true"></i></button>
+            </div>
+        </header>
+
+        <div class="page-content" id="dashboardRoot">
+            <section class="welcome-row" aria-labelledby="welcomeTitle" data-flash-message="@Model.FlashMessage">
+                <div>
+                    <p class="eyebrow" id="currentDate">MONDAY, OCTOBER 26</p>
+                    <h1 id="welcomeTitle">Good morning, Alex <span aria-hidden="true">✦</span></h1>
+                    <p class="welcome-subtitle">A little progress today goes a long way. Here's your study overview.</p>
+                </div>
+                <div class="welcome-actions">
+                    <button class="button button-secondary" id="addAssessmentButton" type="button" popovertarget="assessmentPopover"><i class="bi bi-plus-lg" aria-hidden="true"></i>Add assessment</button>
+                    <button class="button button-primary" id="addTaskButton" type="button"><i class="bi bi-plus-lg" aria-hidden="true"></i>Plan a study task</button>
+                </div>
+            </section>
+
+            <section class="stats-grid" aria-label="Study overview">
+                <article class="stat-card">
+                    <div class="stat-topline"><span class="stat-icon violet"><i class="bi bi-journal-check" aria-hidden="true"></i></span><span class="stat-caption">In progress</span></div>
+                    <p class="stat-value" data-stat="activeAssessments">0</p>
+                    <p class="stat-label">Active assessments</p>
+                    <div class="stat-footnote"><span class="mini-dot dot-violet"></span><span data-stat="completedAssessments">0 completed this term</span></div>
+                </article>
+                <article class="stat-card">
+                    <div class="stat-topline"><span class="stat-icon coral"><i class="bi bi-hourglass-split" aria-hidden="true"></i></span><span class="stat-caption">Next 7 days</span></div>
+                    <p class="stat-value" data-stat="upcomingDeadlines">0</p>
+                    <p class="stat-label">Upcoming deadlines</p>
+                    <div class="stat-footnote"><span class="mini-dot dot-coral"></span><span>Keep your momentum</span></div>
+                </article>
+                <article class="stat-card">
+                    <div class="stat-topline"><span class="stat-icon green"><i class="bi bi-clock-history" aria-hidden="true"></i></span><span class="stat-caption">This week</span></div>
+                    <p class="stat-value"><span data-stat="plannedHours">0</span><small> hrs</small></p>
+                    <p class="stat-label">Planned study time</p>
+                    <div class="stat-footnote"><span class="mini-dot dot-green"></span><span>Across your weekly plan</span></div>
+                </article>
+                <article class="stat-card goal-card">
+                    <div class="stat-topline"><span class="stat-icon amber"><i class="bi bi-bullseye" aria-hidden="true"></i></span><span class="stat-caption">Weekly goal</span></div>
+                    <p class="stat-value"><span data-stat="goalHours">0</span><small> hrs</small></p>
+                    <p class="stat-label">Study goal</p>
+                    <div class="goal-progress" role="progressbar" aria-label="Weekly study goal progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="goalProgressBar"></span></div>
+                </article>
+            </section>
+
+            <div class="dashboard-grid">
+                <section class="panel today-panel" aria-labelledby="todayHeading">
+                    <div class="panel-header">
+                        <div><p class="section-kicker">YOUR FOCUS</p><h2 id="todayHeading">Today's study plan</h2></div>
+                        <button class="text-button" id="todayAddButton" type="button">Add task <i class="bi bi-arrow-right" aria-hidden="true"></i></button>
+                    </div>
+                    <div class="task-list" id="todayTasks" aria-live="polite"></div>
+                    <div class="panel-footer"><span class="footer-icon"><i class="bi bi-lightbulb" aria-hidden="true"></i></span><span>Small, focused sessions add up. Take a short break between tasks.</span></div>
+                </section>
+
+                <section class="panel deadlines-panel" aria-labelledby="deadlinesHeading">
+                    <div class="panel-header">
+                        <div><p class="section-kicker">WHAT'S COMING UP</p><h2 id="deadlinesHeading">Upcoming deadlines</h2></div>
+                        <a class="text-button" href="#assessments">View all <i class="bi bi-arrow-down" aria-hidden="true"></i></a>
+                    </div>
+                    <div class="deadline-list" id="upcomingDeadlinesList" aria-live="polite"></div>
+                </section>
+
+                <section class="panel activity-panel" aria-labelledby="activityHeading">
+                    <div class="panel-header activity-header">
+                        <div><p class="section-kicker">A STEADY RHYTHM</p><h2 id="activityHeading">Study activity</h2></div>
+                        <div class="activity-total"><strong data-stat="plannedHours">0</strong><span>hours planned</span></div>
+                    </div>
+                    <div class="weekly-chart" id="weeklyChart" role="img" aria-label="Planned study hours for the last seven days"></div>
+                </section>
+
+                <section class="assistant-card" aria-labelledby="assistantHeading">
+                    <div class="assistant-orbit" aria-hidden="true"><i class="bi bi-stars"></i></div>
+                    <div class="assistant-content">
+                        <span class="assistant-tag"><span class="mini-dot"></span> DEMO PREVIEW</span>
+                        <h2 id="assistantHeading">A study buddy, right on time.</h2>
+                        <p>Ask for a little direction. This preview uses your sample study plan, not a connected AI model.</p>
+                        <form class="assistant-form" id="assistantForm">
+                            <label class="visually-hidden" for="assistantInput">Ask the demo study assistant</label>
+                            <input id="assistantInput" type="text" maxlength="240" placeholder="What should I focus on today?" autocomplete="off" />
+                            <button class="send-button" type="submit" aria-label="Send message"><i class="bi bi-arrow-up" aria-hidden="true"></i></button>
+                        </form>
+                        <div class="suggestion-list" aria-label="Suggested questions">
+                            <button type="button" data-prompt="What should I focus on today?">Today's focus</button>
+                            <button type="button" data-prompt="Help me break down my next deadline.">Break down a deadline</button>
+                        </div>
+                        <div class="assistant-response" id="assistantResponse" role="status" aria-live="polite" hidden></div>
+                    </div>
+                </section>
+            </div>
+            <section class="panel assessment-manager" id="assessments" aria-labelledby="assessmentsHeading">
+                <div class="panel-header"><div><p class="section-kicker">YOUR COURSEWORK</p><h2 id="assessmentsHeading">All assessments</h2></div><button class="button button-primary" id="manageAddAssessmentButton" type="button" popovertarget="assessmentPopover"><i class="bi bi-plus-lg" aria-hidden="true"></i>Add assessment</button></div>
+                <p class="assessment-intro">Assessment details are saved in this app's SQLite database. Any older sample assessments in this browser are retained locally and are not imported automatically.</p>
+                <div class="assessment-list" id="assessmentList" aria-live="polite"></div>
+            </section>
+            <p class="demo-note"><i class="bi bi-info-circle" aria-hidden="true"></i> Fictional sample tasks for demonstration. Nothing here is connected to a university system.</p>
+        </div>
+    </div>
+</div>
+
+<dialog class="task-dialog" id="taskDialog" aria-labelledby="taskDialogTitle">
+    <form id="taskForm">
+        <div class="dialog-header"><div><p class="section-kicker">MAKE A LITTLE SPACE</p><h2 id="taskDialogTitle">Plan a study task</h2></div><button class="icon-button subtle-button" id="closeTaskDialog" type="button" aria-label="Close dialog"><i class="bi bi-x-lg" aria-hidden="true"></i></button></div>
+        <label class="field-label" for="taskTitle">Task name</label>
+        <input class="form-input" id="taskTitle" name="title" maxlength="90" required placeholder="e.g. Review lecture notes" />
+        <div class="form-row">
+            <div><label class="field-label" for="taskModule">Module</label><select class="form-input" id="taskModule" name="module" required><option value="Computer Science">Computer Science</option><option value="Data Science">Data Science</option><option value="Human-Computer Interaction">Human-Computer Interaction</option></select></div>
+            <div><label class="field-label" for="taskDuration">Duration</label><select class="form-input" id="taskDuration" name="duration"><option value="30">30 minutes</option><option value="45">45 minutes</option><option value="60" selected>1 hour</option><option value="90">1.5 hours</option><option value="120">2 hours</option></select></div>
+        </div>
+        <div class="form-row">
+            <div><label class="field-label" for="taskCategory">Category</label><select class="form-input" id="taskCategory" name="category"><option>Review</option><option>Writing</option><option>Research</option><option>Practice</option></select></div>
+            <div><label class="field-label" for="taskPriority">Priority</label><select class="form-input" id="taskPriority" name="priority"><option value="medium">Medium</option><option value="high">High</option><option value="low">Low</option></select></div>
+        </div>
+        <div class="dialog-actions"><button class="button button-secondary" id="cancelTaskDialog" type="button">Cancel</button><button class="button button-primary" type="submit">Add to today's plan</button></div>
+    </form>
+</dialog>
+
+<div class="assessment-popover" id="assessmentPopover" popover="auto" open="@(Model.ShowAssessmentForm ? "open" : null)" aria-labelledby="createAssessmentTitle">
+    <form asp-controller="Assessments" asp-action="Save" method="post" id="createAssessmentForm">
+        @Html.AntiForgeryToken()
+        <div class="dialog-header"><div><p class="section-kicker">ASSESSMENT DETAILS</p><h2 id="createAssessmentTitle">Add assessment</h2></div><button class="icon-button subtle-button" type="button" popovertarget="assessmentPopover" popovertargetaction="hide" aria-label="Close dialog"><i class="bi bi-x-lg" aria-hidden="true"></i></button></div>
+        <div asp-validation-summary="ModelOnly" class="validation-summary" role="alert"></div>
+        <label class="field-label" for="createAssessmentTitleInput">Assessment title</label>
+        <input class="form-input" id="createAssessmentTitleInput" name="AssessmentForm.Title" value="@Model.AssessmentForm.Title" maxlength="120" required />
+        <span asp-validation-for="AssessmentForm.Title" class="field-validation"></span>
+        <label class="field-label" for="createAssessmentModule">Module name</label>
+        <input class="form-input" id="createAssessmentModule" name="AssessmentForm.ModuleName" value="@Model.AssessmentForm.ModuleName" maxlength="100" required />
+        <span asp-validation-for="AssessmentForm.ModuleName" class="field-validation"></span>
+        <div class="form-row">
+            <div><label class="field-label" for="createAssessmentDeadline">Deadline</label><input class="form-input" id="createAssessmentDeadline" name="AssessmentForm.Deadline" type="date" value="@Model.AssessmentForm.Deadline?.ToString("yyyy-MM-dd")" required /><span asp-validation-for="AssessmentForm.Deadline" class="field-validation"></span></div>
+            <div><label class="field-label" for="createAssessmentPriority">Priority</label><select class="form-input" id="createAssessmentPriority" name="AssessmentForm.Priority"><option selected="@(Model.AssessmentForm.Priority == "Low")">Low</option><option selected="@(Model.AssessmentForm.Priority == "Medium")">Medium</option><option selected="@(Model.AssessmentForm.Priority == "High")">High</option></select><span asp-validation-for="AssessmentForm.Priority" class="field-validation"></span></div>
+        </div>
+        <div class="form-row">
+            <div><label class="field-label" for="createAssessmentTarget">Target word count</label><input class="form-input" id="createAssessmentTarget" name="AssessmentForm.TargetWordCount" type="number" min="1" max="1000000" value="@Model.AssessmentForm.TargetWordCount" required /><span asp-validation-for="AssessmentForm.TargetWordCount" class="field-validation"></span></div>
+            <div><label class="field-label" for="createAssessmentCurrent">Current word count</label><input class="form-input" id="createAssessmentCurrent" name="AssessmentForm.CurrentWordCount" type="number" min="0" max="1000000" value="@Model.AssessmentForm.CurrentWordCount" required /><span asp-validation-for="AssessmentForm.CurrentWordCount" class="field-validation"></span></div>
+        </div>
+        <label class="field-label" for="createAssessmentStatus">Status</label>
+        <select class="form-input" id="createAssessmentStatus" name="AssessmentForm.Status"><option selected="@(Model.AssessmentForm.Status == "In progress")">In progress</option><option selected="@(Model.AssessmentForm.Status == "Completed")">Completed</option></select>
+        <span asp-validation-for="AssessmentForm.Status" class="field-validation"></span>
+        <div class="dialog-actions"><button class="button button-primary" id="createAssessmentSave" type="submit">Save assessment</button></div>
+    </form>
+</div>
+
+<dialog class="task-dialog assessment-dialog" id="assessmentDialog" aria-labelledby="assessmentDialogTitle">
+    <form asp-controller="Assessments" asp-action="Save" method="post" id="assessmentForm">
+        @Html.AntiForgeryToken()
+        <input asp-for="AssessmentForm.Id" type="hidden" />
+        <div class="dialog-header"><div><p class="section-kicker">ASSESSMENT DETAILS</p><h2 id="assessmentDialogTitle">Add assessment</h2></div><button class="icon-button subtle-button" id="closeAssessmentDialog" type="button" aria-label="Close dialog"><i class="bi bi-x-lg" aria-hidden="true"></i></button></div>
+        <div asp-validation-summary="ModelOnly" class="validation-summary" role="alert"></div>
+        <label asp-for="AssessmentForm.Title" class="field-label"></label><input asp-for="AssessmentForm.Title" class="form-input" maxlength="120" required /><span asp-validation-for="AssessmentForm.Title" class="field-validation"></span>
+        <label asp-for="AssessmentForm.ModuleName" class="field-label"></label><input asp-for="AssessmentForm.ModuleName" class="form-input" maxlength="100" required /><span asp-validation-for="AssessmentForm.ModuleName" class="field-validation"></span>
+        <div class="form-row"><div><label asp-for="AssessmentForm.Deadline" class="field-label"></label><input asp-for="AssessmentForm.Deadline" class="form-input" type="date" required /><span asp-validation-for="AssessmentForm.Deadline" class="field-validation"></span></div><div><label asp-for="AssessmentForm.Priority" class="field-label"></label><select asp-for="AssessmentForm.Priority" class="form-input"><option>Low</option><option>Medium</option><option>High</option></select><span asp-validation-for="AssessmentForm.Priority" class="field-validation"></span></div></div>
+        <div class="form-row"><div><label asp-for="AssessmentForm.TargetWordCount" class="field-label"></label><input asp-for="AssessmentForm.TargetWordCount" class="form-input" min="1" max="1000000" required /><span asp-validation-for="AssessmentForm.TargetWordCount" class="field-validation"></span></div><div><label asp-for="AssessmentForm.CurrentWordCount" class="field-label"></label><input asp-for="AssessmentForm.CurrentWordCount" class="form-input" min="0" max="1000000" required /><span asp-validation-for="AssessmentForm.CurrentWordCount" class="field-validation"></span></div></div>
+        <label asp-for="AssessmentForm.Status" class="field-label"></label><select asp-for="AssessmentForm.Status" class="form-input"><option>In progress</option><option>Completed</option></select><span asp-validation-for="AssessmentForm.Status" class="field-validation"></span>
+        <div class="dialog-actions"><button class="button button-secondary" id="cancelAssessmentDialog" type="button">Cancel</button><button class="button button-primary" id="saveAssessmentButton" type="submit">Save assessment</button></div>
+    </form>
+</dialog>
+
+<script id="assessmentData" type="application/json">@Html.Raw(assessmentJson)</script>
+
+<div class="toast-message" id="toastMessage" role="status" aria-live="polite"></div>

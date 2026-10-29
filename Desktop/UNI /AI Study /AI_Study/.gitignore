@@ -1,0 +1,10 @@
+# Local SQLite database and its journal files
+App_Data/*.db
+App_Data/*.db-shm
+App_Data/*.db-wal
+
+# Generated .NET build output
+bin/
+obj/
+TestResults/
+.vs/

@@ -1,0 +1,100 @@
+@model WritingWorkspaceViewModel
+@{
+    ViewData["Title"] = "Writing Workspace";
+    var currentWords = WritingTextMetrics.CountWords(Model.DraftContent);
+    var hasTarget = Model.Assessment.TargetWordCount > 0;
+    var remainingWords = hasTarget ? Math.Max(0, Model.Assessment.TargetWordCount - currentWords) : 0;
+    var initialPercent = hasTarget
+        ? Math.Min(100, (int)Math.Round((double)currentWords / Model.Assessment.TargetWordCount * 100))
+        : 0;
+}
+
+<div class="writing-page" id="writingWorkspace"
+     data-assessment-id="@Model.Assessment.Id"
+     data-deadline="@Model.Assessment.Deadline.ToString("yyyy-MM-dd")"
+     data-target-words="@Model.Assessment.TargetWordCount"
+     data-revision="@Model.Revision"
+     data-updated-at="@(Model.UpdatedAt?.ToLocalTime().ToString("g"))"
+     data-save-url="/Assessments/SaveDraft/@Model.Assessment.Id">
+    <header class="writing-topbar">
+        <a asp-controller="Home" asp-action="Index" class="writing-brand"><span class="brand-mark"><i class="bi bi-journal-bookmark-fill" aria-hidden="true"></i></span><span><strong>Antler</strong><small>Writing workspace</small></span></a>
+        <a asp-controller="Home" asp-action="Index" class="button button-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i>Back to dashboard</a>
+    </header>
+
+    <div class="writing-content">
+        <section class="writing-heading" aria-labelledby="workspaceTitle">
+            <div>
+                <p class="section-kicker">ASSIGNMENT WORKSPACE</p>
+                <h1 id="workspaceTitle">@Model.Assessment.Title</h1>
+                <p class="writing-subtitle">@Model.Assessment.ModuleName <span aria-hidden="true">·</span> Due @Model.Assessment.Deadline.ToString("d MMM yyyy")</p>
+                <p class="deadline-countdown" id="deadlineCountdown" role="status" aria-live="polite">Checking deadline…</p>
+            </div>
+            <div class="workspace-target">
+                <span>Target length</span>
+                <strong>@(hasTarget ? $"{Model.Assessment.TargetWordCount:N0} words" : "Not set")</strong>
+                <span>Assessment status</span>
+                <strong>@Model.Assessment.Status</strong>
+            </div>
+        </section>
+
+        <section class="writing-stats" aria-label="Draft word count progress">
+            <article class="writing-stat"><span>Current words</span><strong id="currentWordCount" aria-live="polite">@currentWords.ToString("N0")</strong></article>
+            <article class="writing-stat"><span>Target words</span><strong id="targetWordCount">@(hasTarget ? Model.Assessment.TargetWordCount.ToString("N0") : "Not set")</strong></article>
+            <article class="writing-stat"><span>Words remaining</span><strong id="remainingWordCount">@(hasTarget ? remainingWords.ToString("N0") : "—")</strong></article>
+            <article class="writing-stat"><span>Complete</span><strong id="wordProgressPercent">@(hasTarget ? $"{initialPercent}%" : "—")</strong></article>
+        </section>
+        <div class="writing-progress" role="progressbar" aria-label="Assignment word count progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@initialPercent" aria-valuetext="@(hasTarget ? $"{initialPercent}% complete" : "Target word count not set")"><span id="writingProgressBar" style="width: @initialPercent%"></span></div>
+
+        <div class="writing-layout">
+            <section class="panel editor-panel" aria-labelledby="draftHeading">
+                <div class="panel-header editor-header">
+                    <div><p class="section-kicker">YOUR DRAFT</p><h2 id="draftHeading">Assignment draft</h2></div>
+                    <span id="draftSaveStatus" class="draft-save-status" role="status" aria-live="polite" data-state="">Loading draft status…</span>
+                </div>
+                <label class="visually-hidden" for="draftEditor">Write your assignment draft</label>
+                <textarea id="draftEditor" class="draft-editor" maxlength="2000000" placeholder="Start writing your assignment here…" spellcheck="true">@Model.DraftContent</textarea>
+                <div class="editor-footer">
+                    <span>Your draft saves automatically after you pause. Keep this page open until you see “Saved”.</span>
+                    <button class="button button-primary" id="saveDraftButton" type="button"><i class="bi bi-cloud-check" aria-hidden="true"></i>Save draft</button>
+                </div>
+                <div class="draft-actions">
+                    <button class="text-button" id="retrySaveButton" type="button" hidden>Retry save</button>
+                    <button class="text-button" id="reloadDraftButton" type="button" hidden>Reload saved version</button>
+                </div>
+            </section>
+
+            <aside class="writing-sidebar" aria-label="Writing time estimate">
+                <section class="panel estimator-panel" aria-labelledby="estimatorHeading">
+                    <p class="section-kicker">PLANNING ESTIMATE</p>
+                    <h2 id="estimatorHeading">Time to finish</h2>
+                    <p class="estimator-explainer">A rough planning guide based on your settings, not a guarantee. Actual writing speed varies with research, complexity, and breaks.</p>
+
+                    <label class="field-label" for="writingSpeed">Writing speed (words per hour)</label>
+                    <input class="form-input estimator-input" id="writingSpeed" type="number" min="1" max="10000" step="1" value="@Model.WritingSpeedWordsPerHour" />
+                    <p class="estimator-setting-note">Your speed and planning settings are saved with this assessment in the local app.</p>
+
+                    <label class="field-label" for="proofreadingPercent">Proofreading allowance (% of writing time)</label>
+                    <input class="form-input estimator-input" id="proofreadingPercent" type="number" min="0" max="100" step="1" value="@Model.ProofreadingPercent" />
+
+                    <label class="field-label" for="availableHoursPerDay">Focused writing hours available per day</label>
+                    <input class="form-input estimator-input" id="availableHoursPerDay" type="number" min="1" max="24" step="1" value="@Model.AvailableHoursPerDay" />
+
+                    <p id="estimateValidation" class="field-validation" role="alert"></p>
+                    <dl class="estimate-results">
+                        <div><dt>Writing time</dt><dd id="estimatedWritingTime">—</dd></div>
+                        <div><dt>Proofreading time</dt><dd id="estimatedProofreadingTime">—</dd></div>
+                        <div class="estimate-total"><dt>Estimated total</dt><dd id="estimatedTotalTime">—</dd></div>
+                    </dl>
+                    <p class="estimate-assumption">Proofreading is estimated as the percentage above of active writing time. Deadline capacity assumes the number of focused hours you entered is available each calendar day, including today and the due date.</p>
+                    <p id="deadlineWarning" class="deadline-warning" role="status" aria-live="polite" data-state="neutral"></p>
+                </section>
+            </aside>
+        </div>
+    </div>
+</div>
+
+<form id="draftSecurity" hidden>@Html.AntiForgeryToken()</form>
+
+@section Scripts {
+    <script type="module" src="~/js/writing-workspace.js" asp-append-version="true"></script>
+}
