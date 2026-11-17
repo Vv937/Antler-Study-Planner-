@@ -1,0 +1,151 @@
+@{
+    ViewData["Title"] = "Calendar";
+}
+
+<div class="app-shell" id="appShell">
+    <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+        <a class="brand" asp-controller="Home" asp-action="Index" aria-label="Antler dashboard">
+            <span class="brand-mark"><i class="bi bi-journal-bookmark-fill" aria-hidden="true"></i></span>
+            <span class="brand-copy"><strong data-brand-name>Antler</strong><small>Your academic copilot</small></span>
+        </a>
+        <div class="sidebar-scroll">
+            <p class="nav-heading">Workspace</p>
+            <nav class="side-nav" aria-label="Workspace">
+                <a class="nav-item" asp-controller="Home" asp-action="Index"><i class="bi bi-grid-1x2-fill" aria-hidden="true"></i><span>Dashboard</span></a>
+                <a class="nav-item" href="/#assessments"><i class="bi bi-journal-check" aria-hidden="true"></i><span>Assessments</span></a>
+                <a class="nav-item is-active" asp-controller="Calendar" asp-action="Index" aria-current="page"><i class="bi bi-calendar3" aria-hidden="true"></i><span>Calendar</span></a>
+            </nav>
+            <p class="nav-heading nav-heading-tools">Tools</p>
+            <nav class="side-nav" aria-label="Study tools">
+                <a class="nav-item" asp-controller="Documents" asp-action="Index"><i class="bi bi-file-earmark-richtext" aria-hidden="true"></i><span>Document Workspace</span><span class="nav-badge">New</span></a>
+            </nav>
+        </div>
+        <div class="sidebar-bottom">
+            <button class="utility-link" id="settingsButton" type="button"><i class="bi bi-gear" aria-hidden="true"></i><span>Settings</span></button>
+            <button class="utility-link" id="helpButton" type="button"><i class="bi bi-question-circle" aria-hidden="true"></i><span>Help &amp; support</span></button>
+            <div class="profile-card">
+                <span class="avatar avatar-sidebar" aria-hidden="true">AM</span>
+                <span class="profile-copy"><strong>Alex Morgan</strong><small>Demo profile</small></span>
+                <button class="icon-button profile-more" id="profileButton" type="button" aria-label="Profile options" title="Profile options"><i class="bi bi-three-dots" aria-hidden="true"></i></button>
+            </div>
+        </div>
+    </aside>
+    <button class="sidebar-backdrop" id="sidebarBackdrop" type="button" aria-label="Close navigation"></button>
+
+    <div class="app-main">
+        <header class="topbar">
+            <div class="topbar-leading">
+                <button class="icon-button mobile-menu-button" id="menuButton" type="button" aria-label="Open navigation" aria-controls="sidebar" aria-expanded="false"><i class="bi bi-list" aria-hidden="true"></i></button>
+                <div class="breadcrumb"><span>Workspace</span><i class="bi bi-chevron-right" aria-hidden="true"></i><strong>Calendar</strong></div>
+            </div>
+            <div class="topbar-actions">
+                <form class="search-box" id="searchForm" role="search">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                    <button class="mobile-search-toggle" id="mobileSearchButton" type="button" aria-label="Open search" aria-expanded="false"><i class="bi bi-search" aria-hidden="true"></i></button>
+                    <label class="visually-hidden" for="globalSearch">Search your study plan</label>
+                    <input id="globalSearch" type="search" placeholder="Search your workspace" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="searchResults" aria-expanded="false" />
+                    <kbd>⌘ K</kbd>
+                    <div class="search-results" id="searchResults" role="listbox" aria-label="Search results" hidden></div>
+                </form>
+                <select class="semester-select" id="semesterSelect" aria-label="Select semester">
+                    <option>Autumn 2026</option><option>Spring 2027</option><option>Summer 2027</option>
+                </select>
+                <button class="icon-button notification-button" id="notificationButton" type="button" aria-label="Notifications"><i class="bi bi-bell" aria-hidden="true"></i><span class="notification-dot" aria-hidden="true"></span></button>
+                <button class="topbar-avatar" id="topProfileButton" type="button" aria-label="Open Alex Morgan's demo profile"><span class="avatar">AM</span><i class="bi bi-chevron-down" aria-hidden="true"></i></button>
+            </div>
+        </header>
+
+        <main class="page-content calendar-page" id="calendarRoot">
+            <section class="calendar-heading-row">
+                <div>
+                    <p class="section-kicker">PLAN YOUR SEMESTER</p>
+                    <h1>Calendar</h1>
+                    <p class="calendar-subtitle">Assessment deadlines stay linked to your coursework. Add study sessions and events around them.</p>
+                </div>
+                <button class="button button-primary" id="calendarAddEvent" type="button"><i class="bi bi-plus-lg" aria-hidden="true"></i>Add Event</button>
+            </section>
+
+            <section class="panel calendar-panel" aria-label="Calendar">
+                <div class="calendar-toolbar">
+                    <div class="calendar-navigation">
+                        <button class="icon-button" id="calendarPrevious" type="button" aria-label="Previous period"><i class="bi bi-chevron-left" aria-hidden="true"></i></button>
+                        <button class="button button-secondary calendar-today" id="calendarToday" type="button">Today</button>
+                        <button class="icon-button" id="calendarNext" type="button" aria-label="Next period"><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+                        <h2 id="calendarHeading" aria-live="polite"></h2>
+                    </div>
+                    <div class="calendar-view-switch" role="group" aria-label="Calendar view">
+                        <button type="button" data-calendar-view="month" aria-pressed="true">Month</button>
+                        <button type="button" data-calendar-view="week" aria-pressed="false">Week</button>
+                        <button type="button" data-calendar-view="day" aria-pressed="false">Day</button>
+                        <button type="button" data-calendar-view="agenda" aria-pressed="false">Agenda</button>
+                    </div>
+                </div>
+                <div class="calendar-legend" aria-label="Event categories">
+                    <span><i class="calendar-legend-dot category-assessment-deadline"></i>Assessment deadline</span>
+                    <span><i class="calendar-legend-dot category-study-session"></i>Study session</span>
+                    <span><i class="calendar-legend-dot category-personal-event"></i>Personal event</span>
+                    <span><i class="calendar-legend-dot category-university-event"></i>University event</span>
+                </div>
+                <div class="calendar-error" id="calendarError" role="alert" hidden></div>
+                <div id="calendarCanvas" aria-live="polite"></div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<dialog class="task-dialog calendar-event-dialog" id="calendarEventDialog" aria-labelledby="calendarEventDialogTitle">
+    <form id="calendarEventForm">
+        @Html.AntiForgeryToken()
+        <input id="calendarEventId" name="id" type="hidden" />
+        <div class="dialog-header">
+            <div><p class="section-kicker">CALENDAR EVENT</p><h2 id="calendarEventDialogTitle">Add event</h2></div>
+            <button class="icon-button subtle-button" id="calendarCloseEvent" type="button" aria-label="Close dialog"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+        </div>
+        <div class="calendar-form-error" id="calendarFormError" role="alert" hidden></div>
+        <label class="field-label" for="calendarEventTitle">Event title</label>
+        <input class="form-input" id="calendarEventTitle" name="title" maxlength="120" required />
+        <label class="field-label" for="calendarEventDescription">Description</label>
+        <textarea class="form-input calendar-description" id="calendarEventDescription" name="description" maxlength="2000" rows="3"></textarea>
+        <label class="calendar-all-day"><input id="calendarAllDay" name="isAllDay" type="checkbox" /> All day</label>
+        <div class="form-row calendar-date-fields" hidden>
+            <div><label class="field-label" for="calendarStartDate">Start date</label><input class="form-input" id="calendarStartDate" type="date" /></div>
+            <div><label class="field-label" for="calendarEndDate">End date</label><input class="form-input" id="calendarEndDate" type="date" /></div>
+        </div>
+        <div class="form-row calendar-time-fields">
+            <div><label class="field-label" for="calendarStartAt">Start date and time</label><input class="form-input" id="calendarStartAt" type="datetime-local" /></div>
+            <div><label class="field-label" for="calendarEndAt">End date and time</label><input class="form-input" id="calendarEndAt" type="datetime-local" /></div>
+        </div>
+        <div class="form-row">
+            <div><label class="field-label" for="calendarCategory">Category</label><select class="form-input" id="calendarCategory" name="category"><option>Assessment deadline</option><option>Study session</option><option>Personal event</option><option>University event</option></select></div>
+            <div><label class="field-label" for="calendarModule">Module (optional)</label><input class="form-input" id="calendarModule" name="moduleName" maxlength="100" /></div>
+        </div>
+        <label class="field-label" for="calendarAssessment">Related assessment (optional)</label>
+        <select class="form-input" id="calendarAssessment" name="assessmentId"><option value="">None</option></select>
+        <div class="dialog-actions">
+            <button class="button button-secondary" id="calendarCancelEvent" type="button">Cancel</button>
+            <button class="button button-primary" id="calendarSaveEvent" type="submit">Save event</button>
+        </div>
+    </form>
+</dialog>
+
+<dialog class="task-dialog calendar-detail-dialog" id="calendarDetailDialog" aria-labelledby="calendarDetailTitle">
+    <div class="calendar-detail-content">
+        <div class="dialog-header">
+            <div><p class="section-kicker" id="calendarDetailCategory">EVENT DETAILS</p><h2 id="calendarDetailTitle"></h2></div>
+            <button class="icon-button subtle-button" id="calendarCloseDetail" type="button" aria-label="Close dialog"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+        </div>
+        <div id="calendarDetailBody"></div>
+        <div class="dialog-actions">
+            <button class="button button-secondary calendar-detail-edit" id="calendarEditEvent" type="button">Edit event</button>
+            <button class="button button-secondary delete-button calendar-detail-delete" id="calendarDeleteEvent" type="button">Delete</button>
+            <a class="button button-primary" id="calendarOpenAssessment" href="#" hidden>Open Assessment</a>
+            <a class="button button-secondary" id="calendarEditAssessment" href="#" hidden>Edit Assessment</a>
+        </div>
+    </div>
+</dialog>
+
+<div class="toast-message" id="toastMessage" role="status" aria-live="polite"></div>
+
+@section Scripts {
+    <script type="module" src="~/js/calendar.js" asp-append-version="true"></script>
+}

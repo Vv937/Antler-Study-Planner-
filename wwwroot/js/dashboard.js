@@ -88,6 +88,7 @@ function renderTasks() {
 function renderDeadlines() {
   const list = document.querySelector("#upcomingDeadlinesList");
   const upcoming = [...dashboardData.assessments]
+    .filter(item => daysUntil(item.deadline) >= 0)
     .sort((left, right) => left.deadline.localeCompare(right.deadline));
 
   if (!upcoming.length) {
@@ -224,7 +225,7 @@ export function initDashboard() {
     assessmentForm.querySelector('[name="AssessmentForm.CurrentWordCount"]').value = assessment?.currentWords ?? 0;
     assessmentForm.querySelector('[name="AssessmentForm.Priority"]').value = assessment?.priority ?? "Medium";
     assessmentForm.querySelector('[name="AssessmentForm.Status"]').value = assessment?.status ?? "In progress";
-    assessmentForm.querySelector(".validation-summary").textContent = "";
+    assessmentForm.querySelector(".validation-summary")?.replaceChildren();
     assessmentDialog.querySelector("#assessmentDialogTitle").textContent = assessment ? "Edit assessment" : "Add assessment";
     assessmentForm.querySelector("#saveAssessmentButton").textContent = "Save assessment";
     // The direct create route uses an `open` attribute as a no-JavaScript fallback.
@@ -291,7 +292,12 @@ export function initDashboard() {
       const progress = Math.max(0, Math.min(100, Math.round((Number(item.currentWords) / Math.max(1, Number(item.targetWords))) * 100)));
       const urgency = item.status === "Completed" ? "Completed" : remaining < 0 ? `Overdue by ${Math.abs(remaining)} days` : remaining === 0 ? "Due today" : `${remaining} days remaining`;
       const urgencyClass = item.status !== "Completed" && remaining < 0 ? "overdue" : "";
-      return `<article class="assessment-card"><div class="assessment-card-main"><div class="assessment-card-title"><h3>${escapeHtml(item.title)}</h3><span class="deadline-status ${urgencyClass}">${escapeHtml(urgency)}</span></div><p>${escapeHtml(item.module)} · ${escapeHtml(item.priority)} priority · ${escapeHtml(item.status)}</p><p>${Number(item.currentWords).toLocaleString()} of ${Number(item.targetWords).toLocaleString()} words</p><div class="deadline-progress" role="progressbar" aria-label="${escapeHtml(item.title)} word count progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress}"><span style="width:${progress}%"></span></div></div><div class="assessment-card-actions"><a class="button button-primary" href="/Assessments/Workspace/${Number(item.id)}"><i class="bi bi-pencil-square" aria-hidden="true"></i>Open workspace</a><button class="button button-secondary assessment-edit" type="button" data-assessment="${escapeHtml(JSON.stringify(item))}">Edit</button><form class="assessment-delete-form" action="/Assessments/Delete" method="post"><input type="hidden" name="__RequestVerificationToken" value="${escapeHtml(document.querySelector('#assessmentForm input[name="__RequestVerificationToken"]')?.value || "")}"><input type="hidden" name="id" value="${Number(item.id)}"><button class="button button-secondary delete-button" type="submit">Delete</button></form></div></article>`;
+      return `<article class="assessment-card"><div class="assessment-card-main"><div class="assessment-card-title"><h3>${escapeHtml(item.title)}</h3><span class="deadline-status ${urgencyClass}">${escapeHtml(urgency)}</span></div><p>${escapeHtml(item.module)} · ${escapeHtml(item.priority)} priority · ${escapeHtml(item.status)}</p><p>${Number(item.currentWords).toLocaleString()} of ${Number(item.targetWords).toLocaleString()} words</p><div class="deadline-progress" role="progressbar" aria-label="${escapeHtml(item.title)} word count progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress}"><span style="width:${progress}%"></span></div></div><div class="assessment-card-actions"><a class="button button-primary" href="/Documents"><i class="bi bi-file-earmark-richtext" aria-hidden="true"></i>Open workspace</a><a class="button button-secondary" href="/Assessments/Workspace/${Number(item.id)}">Assignment draft</a><button class="button button-secondary assessment-edit" type="button" data-assessment="${escapeHtml(JSON.stringify(item))}">Edit</button><form class="assessment-delete-form" action="/Assessments/Delete" method="post"><input type="hidden" name="__RequestVerificationToken" value="${escapeHtml(document.querySelector('#assessmentForm input[name="__RequestVerificationToken"]')?.value || "")}"><input type="hidden" name="id" value="${Number(item.id)}"><button class="button button-secondary delete-button" type="submit">Delete</button></form></div></article>`;
     }).join("");
+  }
+  const requestedEditId = Number(document.querySelector("#dashboardRoot").dataset.editAssessmentId);
+  if (requestedEditId) {
+    const assessment = dashboardData.assessments.find(item => item.id === requestedEditId);
+    if (assessment) openAssessmentForm(assessment);
   }
 }

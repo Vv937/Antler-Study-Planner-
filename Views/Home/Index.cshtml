@@ -23,12 +23,12 @@
                 <button class="nav-item" type="button" disabled title="Available in a future stage"><i class="bi bi-collection" aria-hidden="true"></i><span>My Modules</span></button>
                 <a class="nav-item" href="#assessments"><i class="bi bi-journal-check" aria-hidden="true"></i><span>Assessments</span></a>
                 <button class="nav-item" type="button" disabled title="Available in a future stage"><i class="bi bi-calendar2-week" aria-hidden="true"></i><span>Study Planner</span></button>
-                <button class="nav-item" type="button" disabled title="Available in a future stage"><i class="bi bi-calendar3" aria-hidden="true"></i><span>Calendar</span></button>
+                <a class="nav-item" asp-controller="Calendar" asp-action="Index"><i class="bi bi-calendar3" aria-hidden="true"></i><span>Calendar</span></a>
             </nav>
 
             <p class="nav-heading nav-heading-tools">Tools</p>
             <nav class="side-nav" aria-label="Study tools">
-                <button class="nav-item" type="button" disabled title="Available in a future stage"><i class="bi bi-file-earmark-richtext" aria-hidden="true"></i><span>Document Workspace</span><span class="nav-badge">New</span></button>
+                <a class="nav-item" asp-controller="Documents" asp-action="Index"><i class="bi bi-file-earmark-richtext" aria-hidden="true"></i><span>Document Workspace</span><span class="nav-badge">New</span></a>
                 <button class="nav-item" type="button" disabled title="Available in a future stage"><i class="bi bi-stars" aria-hidden="true"></i><span>AI Study Assistant</span></button>
                 <button class="nav-item" type="button" disabled title="Available in a future stage"><i class="bi bi-graph-up-arrow" aria-hidden="true"></i><span>Progress &amp; Analytics</span></button>
             </nav>
@@ -58,7 +58,7 @@
                     <i class="bi bi-search" aria-hidden="true"></i>
                     <button class="mobile-search-toggle" id="mobileSearchButton" type="button" aria-label="Open search" aria-expanded="false"><i class="bi bi-search" aria-hidden="true"></i></button>
                     <label class="visually-hidden" for="globalSearch">Search your study plan</label>
-                    <input id="globalSearch" type="search" placeholder="Search your workspace" autocomplete="off" />
+                    <input id="globalSearch" type="search" placeholder="Search your workspace" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="searchResults" aria-expanded="false" />
                     <kbd>⌘ K</kbd>
                     <div class="search-results" id="searchResults" role="listbox" aria-label="Search results" hidden></div>
                 </form>
@@ -73,7 +73,7 @@
             </div>
         </header>
 
-        <div class="page-content" id="dashboardRoot">
+        <div class="page-content" id="dashboardRoot" data-edit-assessment-id="@Model.EditAssessmentId">
             <section class="welcome-row" aria-labelledby="welcomeTitle" data-flash-message="@Model.FlashMessage">
                 <div>
                     <p class="eyebrow" id="currentDate">MONDAY, OCTOBER 26</p>

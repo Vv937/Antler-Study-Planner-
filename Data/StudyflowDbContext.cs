@@ -7,6 +7,7 @@ public sealed class StudyflowDbContext(DbContextOptions<StudyflowDbContext> opti
 {
     public DbSet<Assessment> Assessments => Set<Assessment>();
     public DbSet<AssessmentDraft> AssessmentDrafts => Set<AssessmentDraft>();
+    public DbSet<CalendarEvent> CalendarEvents => Set<CalendarEvent>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -18,5 +19,14 @@ public sealed class StudyflowDbContext(DbContextOptions<StudyflowDbContext> opti
         draft.HasOne<Assessment>().WithOne()
             .HasForeignKey<AssessmentDraft>(item => item.AssessmentId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        var calendarEvent = modelBuilder.Entity<CalendarEvent>();
+        calendarEvent.Property(item => item.Title).HasMaxLength(120);
+        calendarEvent.Property(item => item.Description).HasMaxLength(2000);
+        calendarEvent.Property(item => item.Category).HasMaxLength(40);
+        calendarEvent.Property(item => item.ModuleName).HasMaxLength(100);
+        calendarEvent.HasOne<Assessment>().WithMany()
+            .HasForeignKey(item => item.AssessmentId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

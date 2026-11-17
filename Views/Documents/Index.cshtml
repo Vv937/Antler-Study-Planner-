@@ -1,0 +1,119 @@
+@{
+    ViewData["Title"] = "Document Workspace";
+}
+
+<div class="document-workspace" id="documentWorkspace">
+    <header class="document-topbar">
+        <div class="document-topbar-leading">
+            <a class="button button-secondary document-back" href="/" aria-label="Back to dashboard"><i class="bi bi-arrow-left" aria-hidden="true"></i><span>Dashboard</span></a>
+            <span class="document-brand-mark" aria-hidden="true"><i class="bi bi-journal-bookmark-fill"></i></span>
+            <div class="document-title-group">
+                <label class="visually-hidden" for="documentTitle">Document title</label>
+                <input id="documentTitle" class="document-title-input" type="text" maxlength="120" value="Untitled document" aria-label="Document title" />
+                <span class="document-save-status" id="documentSaveStatus" role="status" aria-live="polite">Loading documents…</span>
+            </div>
+        </div>
+        <div class="document-topbar-actions">
+            <label class="visually-hidden" for="documentPicker">Switch document</label>
+            <select id="documentPicker" class="document-picker" aria-label="Switch document"></select>
+            <button class="button button-secondary document-new-button" id="newDocumentButton" type="button"><i class="bi bi-plus-lg" aria-hidden="true"></i><span>New</span></button>
+            <button class="button button-secondary" id="saveDocumentButton" type="button"><i class="bi bi-check2" aria-hidden="true"></i><span>Save</span></button>
+            <button class="button button-primary" id="downloadDocumentButton" type="button"><i class="bi bi-download" aria-hidden="true"></i><span>Download</span></button>
+            <div class="document-menu-wrap">
+                <button class="icon-button document-more-button" id="documentMoreButton" type="button" aria-label="More document options" aria-haspopup="true" aria-expanded="false"><i class="bi bi-three-dots-vertical" aria-hidden="true"></i></button>
+                <div class="document-more-menu" id="documentMoreMenu" role="menu" hidden>
+                    <button type="button" role="menuitem" data-document-action="download-text"><i class="bi bi-file-earmark-text" aria-hidden="true"></i>Download as text</button>
+                    <button type="button" role="menuitem" data-document-action="delete"><i class="bi bi-trash3" aria-hidden="true"></i>Delete document</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="document-toolbar-shell" aria-label="Document formatting">
+        <div class="document-toolbar">
+            <div class="toolbar-group toolbar-history" aria-label="History">
+                <button class="toolbar-button" type="button" data-command="undo" aria-label="Undo" title="Undo"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i></button>
+                <button class="toolbar-button" type="button" data-command="redo" aria-label="Redo" title="Redo"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i></button>
+            </div>
+            <span class="toolbar-divider" aria-hidden="true"></span>
+            <label class="visually-hidden" for="documentStyle">Paragraph style</label>
+            <select class="toolbar-select style-select" id="documentStyle" aria-label="Paragraph style">
+                <option value="p">Normal text</option>
+                <option value="title">Title</option>
+                <option value="subtitle">Subtitle</option>
+                <option value="h1">Heading 1</option>
+                <option value="h2">Heading 2</option>
+                <option value="h3">Heading 3</option>
+            </select>
+            <label class="visually-hidden" for="documentFont">Font family</label>
+            <select class="toolbar-select font-select" id="documentFont" aria-label="Font family">
+                <option value="Arial">Arial</option>
+                <option value="DM Sans">DM Sans</option>
+                <option value="Georgia">Georgia</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Verdana">Verdana</option>
+                <option value="Tahoma">Tahoma</option>
+                <option value="Trebuchet MS">Trebuchet MS</option>
+                <option value="Courier New">Courier New</option>
+            </select>
+            <label class="visually-hidden" for="documentFontSize">Font size</label>
+            <select class="toolbar-select size-select" id="documentFontSize" aria-label="Font size">
+                @foreach (var size in new[] { 8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36 })
+                {
+                    <option value="@size" selected="@(size == 12)">@size</option>
+                }
+            </select>
+            <span class="toolbar-divider" aria-hidden="true"></span>
+            <div class="toolbar-group" aria-label="Text formatting">
+                <button class="toolbar-button" type="button" data-command="bold" aria-label="Bold" title="Bold"><i class="bi bi-type-bold" aria-hidden="true"></i></button>
+                <button class="toolbar-button" type="button" data-command="italic" aria-label="Italic" title="Italic"><i class="bi bi-type-italic" aria-hidden="true"></i></button>
+                <button class="toolbar-button" type="button" data-command="underline" aria-label="Underline" title="Underline"><i class="bi bi-type-underline" aria-hidden="true"></i></button>
+                <button class="toolbar-button" type="button" data-command="strikeThrough" aria-label="Strikethrough" title="Strikethrough"><i class="bi bi-type-strikethrough" aria-hidden="true"></i></button>
+            </div>
+            <span class="toolbar-divider" aria-hidden="true"></span>
+            <label class="toolbar-color" title="Text colour">
+                <span class="visually-hidden">Text colour</span><i class="bi bi-type" aria-hidden="true"></i><input id="documentTextColor" type="color" value="#202724" aria-label="Text colour" />
+            </label>
+            <label class="toolbar-color highlight-color" title="Text highlight colour">
+                <span class="visually-hidden">Text highlight colour</span><i class="bi bi-highlighter" aria-hidden="true"></i><input id="documentHighlightColor" type="color" value="#fff19c" aria-label="Text highlight colour" />
+            </label>
+            <span class="toolbar-divider" aria-hidden="true"></span>
+            <div class="toolbar-group" aria-label="Text alignment">
+                <button class="toolbar-button" type="button" data-command="justifyLeft" aria-label="Align left" title="Align left"><i class="bi bi-text-left" aria-hidden="true"></i></button>
+                <button class="toolbar-button" type="button" data-command="justifyCenter" aria-label="Align centre" title="Align centre"><i class="bi bi-text-center" aria-hidden="true"></i></button>
+                <button class="toolbar-button" type="button" data-command="justifyRight" aria-label="Align right" title="Align right"><i class="bi bi-text-right" aria-hidden="true"></i></button>
+                <button class="toolbar-button" type="button" data-command="justifyFull" aria-label="Justify" title="Justify"><i class="bi bi-justify" aria-hidden="true"></i></button>
+            </div>
+            <span class="toolbar-divider" aria-hidden="true"></span>
+            <div class="toolbar-group" aria-label="Lists and indentation">
+                <button class="toolbar-button" type="button" data-command="insertUnorderedList" aria-label="Bulleted list" title="Bulleted list"><i class="bi bi-list-ul" aria-hidden="true"></i></button>
+                <button class="toolbar-button" type="button" data-command="insertOrderedList" aria-label="Numbered list" title="Numbered list"><i class="bi bi-list-ol" aria-hidden="true"></i></button>
+                <button class="toolbar-button" type="button" data-command="indent" aria-label="Increase indent" title="Increase indent"><i class="bi bi-text-indent-left" aria-hidden="true"></i></button>
+                <button class="toolbar-button" type="button" data-command="outdent" aria-label="Decrease indent" title="Decrease indent"><i class="bi bi-text-indent-right" aria-hidden="true"></i></button>
+            </div>
+            <span class="toolbar-divider" aria-hidden="true"></span>
+            <button class="toolbar-button clear-format-button" id="clearFormattingButton" type="button" aria-label="Clear formatting" title="Clear formatting"><i class="bi bi-eraser" aria-hidden="true"></i></button>
+        </div>
+    </section>
+
+    <section class="document-editor-area">
+        <div class="document-page-hint"><i class="bi bi-file-earmark" aria-hidden="true"></i><span>Your document</span><span class="document-autosave-note">Changes save automatically on this device</span></div>
+        <article class="document-paper">
+            <div id="documentEditor" class="document-editor" contenteditable="true" role="textbox" aria-label="Document editor" aria-multiline="true" spellcheck="true"><p><br></p></div>
+        </article>
+    </section>
+
+    <footer class="document-statusbar" aria-label="Document information">
+        <span><i class="bi bi-file-text" aria-hidden="true"></i> <strong id="documentWordCount">0</strong> words</span>
+        <span><strong id="documentCharacterCount">0</strong> characters</span>
+        <span><strong id="documentCharacterCountNoSpaces">0</strong> characters (no spaces)</span>
+        <span><strong id="documentParagraphCount">0</strong> paragraphs</span>
+        <span><i class="bi bi-clock" aria-hidden="true"></i> <strong id="documentReadingTime">0 min</strong> read</span>
+    </footer>
+</div>
+
+<section class="visually-hidden" aria-live="polite" id="documentAnnouncement"></section>
+
+@section Scripts {
+    <script type="module" src="~/js/document-workspace.js" asp-append-version="true"></script>
+}

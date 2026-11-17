@@ -17,12 +17,14 @@ public class HomeController : Controller
         _db = db;
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(int? editAssessment)
     {
+        var assessments = await _db.Assessments.AsNoTracking().OrderBy(item => item.Deadline).ToListAsync();
         return View(new DashboardViewModel
         {
-            Assessments = await _db.Assessments.AsNoTracking().OrderBy(item => item.Deadline).ToListAsync(),
-            FlashMessage = TempData["AssessmentMessage"] as string
+            Assessments = assessments,
+            FlashMessage = TempData["AssessmentMessage"] as string,
+            EditAssessmentId = assessments.Any(item => item.Id == editAssessment) ? editAssessment : null
         });
     }
 

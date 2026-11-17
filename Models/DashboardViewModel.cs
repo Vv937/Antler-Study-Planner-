@@ -8,6 +8,7 @@ public sealed class DashboardViewModel
     public AssessmentFormModel AssessmentForm { get; init; } = new();
     public bool ShowAssessmentForm { get; init; }
     public string? FlashMessage { get; init; }
+    public int? EditAssessmentId { get; init; }
 }
 
 public sealed class AssessmentFormModel : IValidatableObject

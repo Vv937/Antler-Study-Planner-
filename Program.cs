@@ -39,6 +39,23 @@ using (var scope = app.Services.CreateScope())
                 FOREIGN KEY ("AssessmentId") REFERENCES "Assessments" ("Id") ON DELETE CASCADE
         );
         """);
+    db.Database.ExecuteSqlRaw("""
+        CREATE TABLE IF NOT EXISTS "CalendarEvents" (
+            "Id" INTEGER NOT NULL CONSTRAINT "PK_CalendarEvents" PRIMARY KEY AUTOINCREMENT,
+            "Title" TEXT NOT NULL,
+            "Description" TEXT NOT NULL,
+            "StartAt" TEXT NOT NULL,
+            "EndAt" TEXT NOT NULL,
+            "IsAllDay" INTEGER NOT NULL,
+            "Category" TEXT NOT NULL,
+            "ModuleName" TEXT NULL,
+            "AssessmentId" INTEGER NULL,
+            CONSTRAINT "FK_CalendarEvents_Assessments_AssessmentId"
+                FOREIGN KEY ("AssessmentId") REFERENCES "Assessments" ("Id") ON DELETE SET NULL
+        );
+        CREATE INDEX IF NOT EXISTS "IX_CalendarEvents_AssessmentId"
+            ON "CalendarEvents" ("AssessmentId");
+        """);
 }
 
 // Configure the HTTP request pipeline.
